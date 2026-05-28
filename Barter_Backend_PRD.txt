@@ -1,0 +1,826 @@
+================================================================================
+BARTER — BACKEND PRD
+Stack: Django REST Framework + Supabase + Railway
+Goal: Ship in 8–12 weeks, $0/mo to start
+================================================================================
+
+--------------------------------------------------------------------------------
+1. STACK DECISION (FINAL)
+--------------------------------------------------------------------------------
+
+Component         | Choice              | Why
+------------------|---------------------|----------------------------------------
+API Framework     | Django 4.2 + DRF    | Fast to scaffold, great auth, signals
+Database          | Supabase PostgreSQL | Free 500MB, built-in auth, RLS
+File Storage      | Supabase Storage    | Free 1GB, CDN, same dashboard
+Auth              | DRF SimpleJWT       | JWT tokens, works with Supabase
+Push              | Firebase FCM        | Free, flutter_messaging compatible
+Email             | SendGrid            | Free 100/day
+Payments (India)  | Razorpay            | UPI + cards, webhook-friendly
+Payments (Intl)   | Stripe              | Standard, great webhook DX
+PDF               | WeasyPrint          | HTML→PDF, easy to style
+Search            | Postgres FTS        | Free, good enough for MVP
+Task Queue        | Railway Cron        | Free cron jobs, no Celery needed MVP
+Hosting           | Railway             | Free tier, 1-click Django deploy
+Monitoring        | Sentry free tier    | Error tracking
+Analytics         | PostHog free        | Self-hosted on Railway
+
+DO NOT use WordPress for any app logic.
+WordPress = marketing site only (separate repo, separate domain).
+
+--------------------------------------------------------------------------------
+2. REPO STRUCTURE
+--------------------------------------------------------------------------------
+
+barter-backend/
+├── manage.py
+├── requirements.txt
+├── Procfile                  # web: gunicorn barter.wsgi
+├── railway.toml              # Railway config
+├── .env.example
+├── barter/                   # project config
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── dev.py
+│   │   └── prod.py
+│   ├── urls.py               # root URL config
+│   └── wsgi.py
+└── apps/
+    ├── users/
+    ├── offers/
+    ├── proposals/
+    ├── deals/
+    ├── drops/
+    ├── membership/
+    ├── ratings/
+    ├── notifications/
+    ├── payments/
+    ├── contracts/
+    └── admin_panel/
+
+--------------------------------------------------------------------------------
+3. DEPENDENCIES (requirements.txt)
+--------------------------------------------------------------------------------
+
+django==4.2
+djangorestframework==3.15
+djangorestframework-simplejwt==5.3
+django-cors-headers==4.3
+django-environ==0.11
+psycopg2-binary==2.9
+supabase==2.3
+firebase-admin==6.4
+sendgrid==6.11
+razorpay==1.4
+stripe==8.0
+weasyprint==61.2
+Pillow==10.3
+gunicorn==21.2
+whitenoise==6.6
+sentry-sdk==1.45
+django-filter==23.5
+
+--------------------------------------------------------------------------------
+4. ENVIRONMENT VARIABLES (.env)
+--------------------------------------------------------------------------------
+
+# Django
+SECRET_KEY=
+DEBUG=False
+ALLOWED_HOSTS=*.railway.app,api.barter.so
+
+# Database (Supabase)
+DATABASE_URL=postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres
+
+# Supabase Storage
+SUPABASE_URL=
+SUPABASE_KEY=
+
+# Firebase
+FIREBASE_CREDENTIALS_JSON=
+
+# SendGrid
+SENDGRID_API_KEY=
+
+# Razorpay
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Sentry
+SENTRY_DSN=
+
+# Social OAuth
+INSTAGRAM_APP_ID=
+INSTAGRAM_APP_SECRET=
+TIKTOK_CLIENT_KEY=
+TIKTOK_CLIENT_SECRET=
+YOUTUBE_API_KEY=
+LINKEDIN_CLIENT_ID=
+LINKEDIN_CLIENT_SECRET=
+
+--------------------------------------------------------------------------------
+5. DATABASE MODELS
+--------------------------------------------------------------------------------
+
+--- users/models.py ---
+
+class User(AbstractBaseUser):
+    id                  UUID primary key
+    email               unique
+    role                choices: brand | creator | both
+    name                str
+    username            unique str
+    bio                 str(280)
+    location_city       str
+    location_country    str
+    profile_photo_url   str
+    is_verified         bool default False
+    barter_score        decimal default 0.0
+    created_at          datetime
+    updated_at          datetime
+
+class SocialAccount(Model):
+    user                FK User
+    platform            choices: instagram | tiktok | youtube | linkedin
+    handle              str
+    access_token        encrypted str
+    refresh_token       encrypted str
+    followers           int
+    engagement_rate     decimal
+    avg_views           int
+    demographics        JSONField  # {age_ranges, top_cities, gender_split}
+    last_synced         datetime
+
+class BrandProfile(Model):
+    user                OneToOne User
+    company_name        str
+    website             str
+    industry            str
+    logo_url            str
+    domain_verified     bool default False
+
+class CreatorProfile(Model):
+    user                OneToOne User
+    niches              JSONField  # list of niche strings
+    content_types       JSONField  # list of content type strings
+    tier                choices: nano|micro|mid|macro|mega (auto-calc)
+
+--- offers/models.py ---
+
+class Offer(Model):
+    id                  UUID primary key
+    brand               FK User
+    type                choices: saas|physical|event_pass|experience|
+                                 merchandise|course|gift_card
+    title               str(80)
+    description         str(500)
+    estimated_value     decimal
+    currency            choices: INR | AED | USD
+    quantity            int  # slots available
+    quantity_remaining  int
+    status              choices: draft|live|paused|closed
+    content_ask         JSONField  # {types[], platforms[], count}
+    kpi_preferences     JSONField  # {min_followers, min_engagement, niches[]}
+    rights_tier         choices: none|standard|extended|buyout
+    raw_files_required  bool default False
+    exclusivity         choices: none|category_30|full_60
+    images              JSONField  # list of Supabase storage URLs
+    attachments         JSONField
+    proposal_deadline   datetime
+    max_proposals       int null
+    shipping_required   bool default False
+    created_at          datetime
+    updated_at          datetime
+
+--- proposals/models.py ---
+
+class Proposal(Model):
+    id                  UUID primary key
+    offer               FK Offer
+    creator             FK User
+    pitch               str(500)
+    deliverables        JSONField
+    timeline            date
+    round               int default 1  # max 3
+    status              choices: pending|countered|accepted|declined|expired
+    counter_by          FK User null  # who sent the last counter
+    created_at          datetime
+    updated_at          datetime
+
+class ProposalCounter(Model):
+    proposal            FK Proposal
+    sent_by             FK User
+    deliverables        JSONField
+    timeline            date
+    note                str(300)
+    round_number        int
+    created_at          datetime
+
+--- deals/models.py ---
+
+class Deal(Model):
+    id                  UUID primary key
+    offer               FK Offer
+    proposal            FK Proposal
+    brand               FK User
+    creator             FK User
+    agreed_terms        JSONField
+    rights_tier         str
+    raw_files_required  bool
+    exclusivity         str
+    deal_fee            decimal
+    currency            str
+    status              choices: pending_membership|active|delivered|
+                                 revision_requested|complete|disputed|cancelled
+    shipping_address    encrypted JSONField null
+    shipped_at          datetime null
+    delivered_at        datetime null
+    completed_at        datetime null
+    deadline            date
+    created_at          datetime
+
+class Delivery(Model):
+    deal                FK Deal
+    files               JSONField  # Supabase URLs
+    post_urls           JSONField  # live post links
+    notes               str
+    submitted_at        datetime
+    status              choices: pending|accepted|revision|disputed
+
+class DealMessage(Model):
+    deal                FK Deal
+    sender              FK User
+    body                str
+    attachment_url      str null
+    created_at          datetime
+    read_at             datetime null
+
+class RevisionRequest(Model):
+    deal                FK Deal
+    requested_by        FK User
+    reason              str(300)
+    round_number        int  # max 2
+    created_at          datetime
+
+--- drops/models.py ---
+
+class DropsCampaign(Model):
+    id                  UUID primary key
+    brand               FK User
+    offer               FK Offer
+    name                str
+    goal                choices: awareness|launch|event_hype|review
+    total_slots         int
+    filled_slots        int default 0
+    approval_mode       choices: auto | manual
+    application_deadline datetime
+    status              choices: draft|live|paused|closed
+    created_at          datetime
+
+class DropsApplication(Model):
+    campaign            FK DropsCampaign
+    creator             FK User
+    pitch               str(500)
+    status              choices: pending|approved|declined
+    deal                FK Deal null  # created on approval
+    applied_at          datetime
+    reviewed_at         datetime null
+
+--- membership/models.py ---
+
+class MembershipTask(Model):
+    brand_name          str
+    brand_logo_url      str
+    title               str
+    platform            choices: instagram|tiktok|open
+    points_value        int
+    brief_richtext      TextField
+    required_tags       JSONField
+    is_active           bool default True
+    is_featured         bool default False
+    available_to_tiers  JSONField  # ["nano","micro","mid","macro","mega"]
+    available_to_markets JSONField # ["IN","AE","US"]
+    created_at          datetime
+
+class MembershipTaskSubmission(Model):
+    creator             FK User
+    task                FK MembershipTask
+    post_url            str
+    note                str null
+    status              choices: pending|approved|rejected|resubmit_requested
+    rejection_reason    str null
+    reviewer            FK User null
+    points_awarded      int default 0
+    submitted_at        datetime
+    reviewed_at         datetime null
+
+class CreatorMembership(Model):
+    creator             OneToOne User
+    total_points        int default 0
+    pro_active          bool default False
+    pro_expires_at      datetime null
+    tier                str  # auto-calculated from SocialAccount
+    tasks_this_period   JSONField  # {task_id: submitted_at}
+    period_reset_at     datetime
+    updated_at          datetime
+
+--- ratings/models.py ---
+
+class Rating(Model):
+    deal                FK Deal
+    rater               FK User
+    ratee               FK User
+    stars               int (1-5)
+    review_text         str(280) null
+    published_at        datetime null  # null until both parties rate
+    created_at          datetime
+
+--- notifications/models.py ---
+
+class Notification(Model):
+    user                FK User
+    type                str  # proposal_received, deal_accepted, etc.
+    title               str
+    body                str
+    deep_link           str null
+    read                bool default False
+    created_at          datetime
+
+--- payments/models.py ---
+
+class Payment(Model):
+    brand               FK User
+    deal                FK Deal null
+    amount              decimal
+    currency            str
+    gateway             choices: razorpay | stripe
+    gateway_ref         str  # razorpay order_id or stripe payment_intent_id
+    status              choices: pending|completed|failed|refunded
+    invoice_url         str null
+    created_at          datetime
+
+class Subscription(Model):
+    brand               FK User
+    plan                choices: free|starter|growth|scale
+    gateway             choices: razorpay | stripe
+    gateway_sub_id      str
+    status              choices: active|cancelled|past_due
+    current_period_end  datetime
+    deals_used          int default 0
+    deals_included      int
+    created_at          datetime
+
+--------------------------------------------------------------------------------
+6. API ENDPOINTS (complete list)
+--------------------------------------------------------------------------------
+
+AUTH
+POST   /api/auth/register/              Public
+POST   /api/auth/login/                 Public
+POST   /api/auth/token/refresh/         Public
+POST   /api/auth/logout/                Auth
+POST   /api/auth/oauth/{platform}/      Auth  (instagram/tiktok/youtube/linkedin)
+POST   /api/auth/verify-domain/         Brand only
+
+USERS / PROFILES
+GET    /api/users/me/                   Auth
+PATCH  /api/users/me/                   Auth
+GET    /api/users/{id}/                 Public
+GET    /api/users/me/social-accounts/   Auth
+DELETE /api/users/me/social-accounts/{platform}/  Auth
+
+OFFERS
+GET    /api/offers/                     Public  (filter: type, value, niche, market, drops)
+POST   /api/offers/                     Brand only
+GET    /api/offers/{id}/                Public
+PATCH  /api/offers/{id}/                Brand owner
+DELETE /api/offers/{id}/                Brand owner
+GET    /api/offers/{id}/value-engine/   Auth  (returns recommendation)
+
+PROPOSALS
+POST   /api/offers/{id}/proposals/      Creator only
+GET    /api/proposals/                  Auth  (own proposals)
+GET    /api/proposals/{id}/             Owner only
+POST   /api/proposals/{id}/counter/     Owner only
+POST   /api/proposals/{id}/accept/      Brand only
+POST   /api/proposals/{id}/decline/     Brand only
+
+DEALS
+GET    /api/deals/                      Auth  (own deals)
+GET    /api/deals/{id}/                 Deal parties only
+POST   /api/deals/{id}/ship/            Brand only
+POST   /api/deals/{id}/confirm-receipt/ Creator only
+POST   /api/deals/{id}/deliver/         Creator only
+POST   /api/deals/{id}/approve/         Brand only
+POST   /api/deals/{id}/request-revision/ Brand only
+POST   /api/deals/{id}/complete/        Both parties
+POST   /api/deals/{id}/dispute/         Both parties
+GET    /api/deals/{id}/messages/        Deal parties only
+POST   /api/deals/{id}/messages/        Deal parties only
+
+DROPS
+GET    /api/drops/                      Public
+POST   /api/drops/                      Brand only
+GET    /api/drops/{id}/                 Public
+PATCH  /api/drops/{id}/                 Brand only
+POST   /api/drops/{id}/apply/           Creator only
+GET    /api/drops/{id}/applications/    Brand only
+POST   /api/drops/{id}/applications/{app_id}/approve/   Brand only
+POST   /api/drops/{id}/applications/{app_id}/decline/   Brand only
+GET    /api/drops/{id}/shipping-export/ Brand only  (returns CSV)
+
+MEMBERSHIP
+GET    /api/membership/tasks/           Auth (creator)
+GET    /api/membership/tasks/{id}/brief/ Auth
+POST   /api/membership/submissions/     Creator only
+GET    /api/membership/status/          Creator only
+GET    /api/admin/membership/queue/     Admin only
+PATCH  /api/admin/membership/submissions/{id}/review/  Admin only
+
+RATINGS
+POST   /api/deals/{id}/rate/            Deal parties only
+GET    /api/users/{id}/ratings/         Public
+
+NOTIFICATIONS
+GET    /api/notifications/              Auth
+PATCH  /api/notifications/{id}/read/    Auth
+PATCH  /api/notifications/read-all/     Auth
+
+PAYMENTS
+POST   /api/payments/create-deal-fee/   Brand only
+POST   /api/payments/webhook/razorpay/  Razorpay IP whitelist
+POST   /api/payments/webhook/stripe/    Stripe IP whitelist
+GET    /api/payments/invoices/          Auth
+POST   /api/subscriptions/              Brand only
+GET    /api/subscriptions/me/           Brand only
+DELETE /api/subscriptions/me/           Brand only
+
+ANALYTICS (Brand)
+GET    /api/analytics/deals/            Brand only
+GET    /api/analytics/creators/         Brand only
+GET    /api/analytics/content/          Brand only
+
+CONTRACTS
+GET    /api/deals/{id}/contract/        Deal parties only  (returns PDF URL)
+
+--------------------------------------------------------------------------------
+7. KEY BUSINESS LOGIC
+--------------------------------------------------------------------------------
+
+PROPOSAL STATE MACHINE
+pending → countered (either party) → accepted → [Deal created]
+pending → declined
+countered → accepted
+countered → declined
+countered (round 3, no response after 7 days) → expired
+
+DEAL STATE MACHINE
+pending_membership → active (on membership approval)
+active → delivered (creator submits)
+delivered → revision_requested (brand requests, max 2)
+revision_requested → delivered (creator resubmits)
+delivered → complete (brand approves, both rate, fee charged)
+active/delivered → disputed (either party flags)
+disputed → complete / cancelled (admin resolves)
+
+BARTER SCORE CALCULATION (run after each rating)
+  score = (avg_star_rating × 0.5)
+        + (completion_rate × 0.3)        # completed / accepted deals
+        + (on_time_rate × 0.2)           # delivered before deadline
+  Normalised to 0–10 scale. Recalculated and saved to User.barter_score.
+
+CREATOR TIER (auto-calculated on OAuth sync)
+  max_followers = max across all connected SocialAccount.followers
+  nano   = < 10,000
+  micro  = 10,000 – 99,999
+  mid    = 100,000 – 499,999
+  macro  = 500,000 – 999,999
+  mega   = 1,000,000+
+
+DEAL FEE CALCULATION
+  value = Deal.agreed_terms['offer_estimated_value']
+  INR:  <= 5000 → 999 | <= 15000 → 1499 | <= 50000 → 1999 | > 50000 → 2999
+  AED:  proportional (1 INR ≈ 0.044 AED)
+  USD:  proportional (1 INR ≈ 0.012 USD)
+  Fee stored on Deal.deal_fee at deal creation. Never recalculated after.
+
+MEMBERSHIP POINTS → PRO MONTHS
+  points_to_months = {50:1, 100:2, 150:3, 250:6, 400:12}
+  On approval: add points to total. Find highest milestone crossed.
+  pro_expires_at = max(now(), current pro_expires_at) + timedelta(months=earned)
+  Carry forward unused points.
+
+PERIOD RESET (cron, runs daily at midnight UTC)
+  For each CreatorMembership where period_reset_at <= now():
+    clear tasks_this_period
+    if tier in [nano, micro]: period_reset_at = first day of next month
+    if tier in [mid, macro, mega]: period_reset_at = first day of next quarter
+
+--------------------------------------------------------------------------------
+8. NOTIFICATIONS — EVENT TRIGGERS
+--------------------------------------------------------------------------------
+
+Event                         | Recipient  | Push | Email
+------------------------------|------------|------|------
+Proposal received             | Brand      | ✓    | ✓
+Proposal accepted             | Creator    | ✓    | ✓
+Proposal countered            | Other party| ✓    | ✓
+Proposal declined             | Creator    | ✓    | -
+Deal room created             | Both       | ✓    | ✓
+Brand shipped item            | Creator    | ✓    | ✓
+Creator confirmed receipt     | Brand      | ✓    | -
+Content delivered             | Brand      | ✓    | ✓
+Revision requested            | Creator    | ✓    | ✓
+Deal complete                 | Both       | ✓    | ✓
+Rating received               | Both       | ✓    | -
+Membership submission received| Creator    | ✓    | ✓
+Membership approved           | Creator    | ✓    | ✓
+Membership rejected           | Creator    | ✓    | ✓
+Pro expiring in 14 days       | Creator    | ✓    | ✓
+Drops application received    | Brand      | ✓    | -
+Drops application approved    | Creator    | ✓    | ✓
+
+Notification helper (notifications/utils.py):
+  send_notification(user_id, type, title, body, deep_link)
+  → saves Notification record
+  → sends FCM push via firebase-admin
+  → sends SendGrid email if email=True for that event type
+
+--------------------------------------------------------------------------------
+9. OAUTH — SOCIAL ACCOUNT SYNC
+--------------------------------------------------------------------------------
+
+Flow for all platforms:
+  1. Flutter opens OAuth URL in webview / browser
+  2. User authorises → redirect to /api/auth/oauth/{platform}/
+     with code in query params
+  3. Django exchanges code for access_token
+  4. Django calls platform API to pull stats
+  5. Saves/updates SocialAccount record
+  6. Returns updated creator profile to Flutter
+
+Instagram (Graph API):
+  Scopes: instagram_basic, pages_read_engagement
+  Pull:   followers_count, media_count
+  Engagement: calculate from recent 12 posts (likes+comments / followers)
+  Demographics: requires Instagram Insights (business/creator account only)
+  Refresh: token valid 60 days → store refresh_token, refresh on sync
+
+TikTok:
+  Scopes: user.info.basic, video.list
+  Pull:   follower_count, following_count, video stats
+  Note:   avg views = mean of last 20 videos. Demographics very limited.
+  Fallback: if API restricted → prompt manual entry in Flutter
+
+YouTube (Data API v3):
+  Scopes: youtube.readonly, yt-analytics.readonly
+  Pull:   subscriberCount, viewCount, videoCount
+  Demographics: via YouTube Analytics API (separate auth scope)
+  Quota:  10,000 units/day free → cache responses, don't call on every login
+
+LinkedIn:
+  Scopes: r_liteprofile, r_emailaddress, r_organization_social
+  Pull:   follower count (company pages only — personal is restricted)
+  Fallback: manual follower entry for personal profiles
+
+Sync schedule (Railway cron):
+  0 2 * * *  → run management command sync_social_stats
+  Refreshes all SocialAccounts where last_synced > 7 days ago
+  Recalculates creator tier after each sync
+
+--------------------------------------------------------------------------------
+10. FILE STORAGE (SUPABASE)
+--------------------------------------------------------------------------------
+
+Bucket structure:
+  barter-public/
+    profiles/{user_id}/photo.jpg
+    offers/{offer_id}/image_{n}.jpg
+    brands/{brand_id}/logo.jpg
+    tasks/{task_id}/brief_assets/
+
+  barter-private/
+    deals/{deal_id}/deliverables/{filename}
+    deals/{deal_id}/raw_files/{filename}
+    contracts/{deal_id}/contract.pdf
+
+Access rules:
+  Public bucket: read by anyone, write by authenticated owner only
+  Private bucket: read/write by deal parties only (RLS policy in Supabase)
+
+Upload flow (Django):
+  Use supabase-py client to upload
+  Return public or signed URL to Flutter
+  Store URL in relevant model field (JSONField for multiple files)
+
+Max file sizes:
+  Profile photos: 5MB
+  Offer images: 10MB each
+  Deliverables: 500MB
+  Raw files: 2GB
+  Contracts PDF: 5MB
+
+--------------------------------------------------------------------------------
+11. CONTRACT PDF GENERATION
+--------------------------------------------------------------------------------
+
+Library: WeasyPrint
+Template: HTML + CSS in contracts/templates/contract.html
+
+Contract fields:
+  - Deal ID (UUID, shown as BARTER-XXXXXX)
+  - Date of agreement
+  - Brand: name, company, website
+  - Creator: name, username, primary platform
+  - What brand provides (itemised from agreed_terms)
+  - What creator delivers (itemised: content type, platform, count, timeline)
+  - Content rights tier (plain English description)
+  - Raw files: yes/no
+  - Exclusivity terms
+  - Revision allowance: max 2
+  - Deal fee amount (shown to brand, not shown to creator)
+  - Good-faith disclaimer (not legally binding in MVP)
+  - Agreed by: [Brand Name] and [Creator Name] on [Date]
+  - Barter watermark + logo
+
+Generation trigger:
+  On POST /api/proposals/{id}/accept/ → generate PDF → upload to
+  Supabase private bucket → store URL in Deal.contract_url
+
+Endpoint: GET /api/deals/{id}/contract/ → returns signed URL (expires 1hr)
+
+--------------------------------------------------------------------------------
+12. PAYMENT FLOWS
+--------------------------------------------------------------------------------
+
+RAZORPAY (India — deal fees):
+  1. Deal reaches complete status (both parties confirm)
+  2. Django calls POST /api/payments/create-deal-fee/
+  3. Creates Razorpay Order with deal_fee amount in INR
+  4. Returns order_id + key to Flutter
+  5. Flutter opens Razorpay checkout
+  6. On payment: Razorpay webhook hits /api/payments/webhook/razorpay/
+  7. Django verifies signature, marks Payment.status = completed
+  8. Generates invoice PDF, stores in Supabase, emails to brand
+
+STRIPE (UAE/US/CA — deal fees):
+  Same flow but using Stripe Payment Intent instead of Razorpay Order.
+  Webhook: payment_intent.succeeded
+
+BRAND SUBSCRIPTIONS (Razorpay Subscriptions / Stripe Billing):
+  - Brand selects plan → Django creates subscription via gateway
+  - Webhook on invoice.paid → updates Subscription.deals_included, period_end
+  - Monthly reset of Subscription.deals_used via cron
+
+IMPORTANT:
+  - Payment method must be saved before Deal Room activates
+  - Brand is charged only on deal completion — not at proposal acceptance
+  - Deal fee is shown to brand before they confirm deal (at proposal acceptance)
+  - Creator never sees or pays any fee
+
+--------------------------------------------------------------------------------
+13. CRON JOBS (Railway Scheduler — no Celery needed for MVP)
+--------------------------------------------------------------------------------
+
+Job                           | Schedule        | Command
+------------------------------|-----------------|---------------------------
+Sync social stats             | Daily 2am UTC   | sync_social_stats
+Reset membership periods      | Daily midnight  | reset_membership_periods
+Expire stale proposals        | Daily 8am UTC   | expire_proposals
+Send Pro expiry reminders     | Daily 9am UTC   | send_pro_expiry_reminders
+Publish ratings (7-day rule)  | Daily 10am UTC  | publish_pending_ratings
+Reset subscription deal count | Monthly 1st     | reset_subscription_deals
+
+All implemented as Django management commands in apps/*/management/commands/
+
+--------------------------------------------------------------------------------
+14. ADMIN PANEL
+--------------------------------------------------------------------------------
+
+Use Django Admin (built-in) — customised, not rebuilt.
+
+Register all models. Add custom actions:
+  - Approve/reject membership submissions (bulk action)
+  - View deal disputes queue
+  - Verify brand domain manually
+  - Add/edit membership tasks (MembershipTask admin)
+  - View payment logs
+  - Impersonate user (django-hijack package)
+
+Add django-admin-interface for nicer UI skin (free, 1 pip install).
+
+--------------------------------------------------------------------------------
+15. SECURITY CHECKLIST
+--------------------------------------------------------------------------------
+
+  ✓ CORS: whitelist Flutter Web + app domains only (django-cors-headers)
+  ✓ JWT: 15min access token, 7-day refresh token
+  ✓ Razorpay webhook: verify HMAC signature on every request
+  ✓ Stripe webhook: verify Stripe-Signature header
+  ✓ Shipping address: encrypt with Fernet (cryptography package) before save
+  ✓ Social OAuth tokens: encrypt with Fernet before save
+  ✓ Rate limiting: django-ratelimit on auth endpoints (5 req/min)
+  ✓ File uploads: validate MIME type server-side, not just extension
+  ✓ Admin: 2FA via django-otp
+  ✓ Supabase RLS: row-level security on private bucket
+  ✓ HTTPS: enforced by Railway (automatic SSL)
+  ✓ Sentry: all exceptions captured
+
+--------------------------------------------------------------------------------
+16. DEPLOYMENT (RAILWAY — FREE TIER)
+--------------------------------------------------------------------------------
+
+railway.toml:
+  [build]
+  builder = "nixpacks"
+
+  [deploy]
+  startCommand = "gunicorn barter.wsgi --bind 0.0.0.0:$PORT"
+
+  [[services]]
+  name = "web"
+
+  [[services]]
+  name = "worker"
+  startCommand = "python manage.py run_cron"
+
+Procfile (backup):
+  web: gunicorn barter.wsgi --bind 0.0.0.0:$PORT
+  release: python manage.py migrate
+
+Free tier limits:
+  512MB RAM, 1 vCPU, $5 credit/mo (enough for MVP)
+  Upgrade to Hobby ($5/mo) when RAM limit hits
+  Supabase free: 500MB DB (enough for ~100K deals), 1GB storage
+
+Static files: served via WhiteNoise (no S3 needed for Django static)
+
+--------------------------------------------------------------------------------
+17. BUILD ORDER FOR CODING AGENT
+--------------------------------------------------------------------------------
+
+Week 1:
+  ✓ Django project setup, settings, Railway deploy
+  ✓ Supabase connection, DATABASE_URL
+  ✓ users app: User model, auth endpoints, JWT
+  ✓ BrandProfile, CreatorProfile models
+
+Week 2:
+  ✓ SocialAccount model + OAuth endpoints (Instagram first)
+  ✓ offers app: Offer model, CRUD endpoints, filters
+  ✓ Value Engine: rule-based recommendation endpoint
+
+Week 3:
+  ✓ proposals app: Proposal, ProposalCounter models
+  ✓ Proposal endpoints: create, counter, accept, decline
+  ✓ State machine logic
+
+Week 4:
+  ✓ deals app: Deal, Delivery, DealMessage, RevisionRequest
+  ✓ Deal Room endpoints: ship, confirm-receipt, deliver, approve, complete
+  ✓ DealMessage endpoints (chat)
+
+Week 5:
+  ✓ drops app: DropsCampaign, DropsApplication
+  ✓ Drops endpoints + bulk approve + shipping CSV export
+  ✓ Shipping address encryption
+
+Week 6:
+  ✓ contracts app: WeasyPrint PDF generation
+  ✓ Supabase Storage integration (file uploads)
+  ✓ Firebase FCM setup + notifications app
+  ✓ SendGrid email templates (5 core templates)
+
+Week 7:
+  ✓ membership app: all 3 models + all endpoints
+  ✓ Points calculation logic
+  ✓ Admin review queue
+
+Week 8:
+  ✓ ratings app + Barter Score calculation
+  ✓ payments app: Razorpay integration + webhook
+  ✓ Stripe integration + webhook
+  ✓ Invoice generation
+
+Week 9:
+  ✓ Remaining OAuth: TikTok, YouTube, LinkedIn
+  ✓ Cron jobs: all 6 management commands
+  ✓ Analytics endpoints
+
+Week 10:
+  ✓ Django Admin customisation
+  ✓ Security hardening (rate limiting, encryption, CORS)
+  ✓ Sentry integration
+
+Week 11-12:
+  ✓ Load testing (locust)
+  ✓ Bug fixes from Flutter integration testing
+  ✓ Final Railway prod deploy
+
+================================================================================
+END OF BACKEND PRD
+================================================================================
