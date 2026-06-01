@@ -12,7 +12,8 @@ from .serializers import (
     UserRegistrationSerializer, UserSerializer, UserMeSerializer,
     SocialAccountSerializer, SocialAccountCreateSerializer,
     BrandProfileSerializer, BrandProfileCreateSerializer,
-    CreatorProfileSerializer, CreatorProfileCreateSerializer
+    CreatorProfileSerializer, CreatorProfileCreateSerializer,
+    CreatorListSerializer,
 )
 
 User = get_user_model()
@@ -76,6 +77,27 @@ class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
     lookup_field = 'id'
+
+
+class CreatorListView(generics.ListAPIView):
+    """Browse creators for brand discovery."""
+    serializer_class = CreatorListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = User.objects.filter(role__in=['creator', 'both']).select_related(
+            'creator_profile'
+        ).prefetch_related('social_accounts')
+
+        niche = self.request.query_params.get('niche')
+        if niche:
+            queryset = queryset.filter(creator_profile__niches__contains=[niche])
+
+        tier = self.request.query_params.get('tier')
+        if tier:
+            queryset = queryset.filter(creator_profile__tier=tier.lower())
+
+        return queryset.order_by('-barter_score', '-created_at')
 
 
 class SocialAccountListCreateView(generics.ListCreateAPIView):

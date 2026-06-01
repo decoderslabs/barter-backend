@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('me/', views.MeView.as_view(), name='me'),
+    path('creators/', views.CreatorListView.as_view(), name='creator-list'),
     path('<uuid:id>/', views.UserDetailView.as_view(), name='user-detail'),
     path('me/social-accounts/', views.SocialAccountListCreateView.as_view(), name='social-accounts'),
     path('me/social-accounts/<str:platform>/', views.SocialAccountDeleteView.as_view(), name='social-account-delete'),

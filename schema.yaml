@@ -1,0 +1,4272 @@
+openapi: 3.0.3
+info:
+  title: Barter API
+  version: 1.0.0
+  description: Backend API for the Barter influencer-brand collaboration platform.
+paths:
+  /api/analytics/content/:
+    get:
+      operationId: analytics_content_retrieve
+      description: Analytics for content deliverables
+      tags:
+      - analytics
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/analytics/creators/:
+    get:
+      operationId: analytics_creators_retrieve
+      description: Analytics for creators brand has worked with
+      tags:
+      - analytics
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/analytics/deals/:
+    get:
+      operationId: analytics_deals_retrieve
+      description: Analytics for brand's deals
+      tags:
+      - analytics
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/oauth/{platform}/callback/:
+    post:
+      operationId: auth_oauth_callback_create
+      description: Handle OAuth callback and connect social account
+      parameters:
+      - in: path
+        name: platform
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/oauth/{platform}/url/:
+    get:
+      operationId: auth_oauth_url_retrieve
+      description: Get OAuth URL for a platform
+      parameters:
+      - in: path
+        name: platform
+        schema:
+          type: string
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegistration'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/verify-domain/:
+    post:
+      operationId: auth_verify_domain_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/contracts/{id}/contract/:
+    get:
+      operationId: contracts_contract_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - contracts
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/:
+    get:
+      operationId: deals_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDealListList'
+          description: ''
+  /api/deals/{id}/:
+    get:
+      operationId: deals_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deal'
+          description: ''
+  /api/deals/{id}/approve/:
+    post:
+      operationId: deals_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/{id}/complete/:
+    post:
+      operationId: deals_complete_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/{id}/confirm-receipt/:
+    post:
+      operationId: deals_confirm_receipt_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/{id}/deliver/:
+    post:
+      operationId: deals_deliver_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/{id}/dispute/:
+    post:
+      operationId: deals_dispute_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/{id}/messages/:
+    get:
+      operationId: deals_messages_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDealMessageList'
+          description: ''
+  /api/deals/{id}/messages/send/:
+    post:
+      operationId: deals_messages_send_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DealMessageCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DealMessageCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DealMessageCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DealMessageCreate'
+          description: ''
+  /api/deals/{id}/request-revision/:
+    post:
+      operationId: deals_request_revision_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/deals/{id}/ship/:
+    post:
+      operationId: deals_ship_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - deals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/drops/:
+    get:
+      operationId: drops_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - drops
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDropsCampaignList'
+          description: ''
+    post:
+      operationId: drops_create
+      tags:
+      - drops
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropsCampaignCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DropsCampaignCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DropsCampaignCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DropsCampaignCreate'
+          description: ''
+  /api/drops/{id}/:
+    get:
+      operationId: drops_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DropsCampaign'
+          description: ''
+    put:
+      operationId: drops_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropsCampaignRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DropsCampaignRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DropsCampaignRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DropsCampaign'
+          description: ''
+    patch:
+      operationId: drops_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDropsCampaignRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDropsCampaignRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDropsCampaignRequest'
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DropsCampaign'
+          description: ''
+  /api/drops/{id}/applications/:
+    get:
+      operationId: drops_applications_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - drops
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDropsApplicationList'
+          description: ''
+  /api/drops/{id}/applications/{app_id}/approve/:
+    post:
+      operationId: drops_applications_approve_create
+      parameters:
+      - in: path
+        name: app_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/drops/{id}/applications/{app_id}/decline/:
+    post:
+      operationId: drops_applications_decline_create
+      parameters:
+      - in: path
+        name: app_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/drops/{id}/apply/:
+    post:
+      operationId: drops_apply_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DropsApplicationCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DropsApplicationCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DropsApplicationCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DropsApplicationCreate'
+          description: ''
+  /api/drops/{id}/shipping-export/:
+    get:
+      operationId: drops_shipping_export_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - drops
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/membership/admin/queue/:
+    get:
+      operationId: membership_admin_queue_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - membership
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMembershipReviewList'
+          description: ''
+  /api/membership/admin/submissions/{id}/review/:
+    patch:
+      operationId: membership_admin_submissions_review_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - membership
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/membership/status/:
+    get:
+      operationId: membership_status_retrieve
+      tags:
+      - membership
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/membership/submissions/:
+    post:
+      operationId: membership_submissions_create
+      tags:
+      - membership
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipTaskSubmissionCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipTaskSubmissionCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipTaskSubmissionCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipTaskSubmissionCreate'
+          description: ''
+  /api/membership/tasks/:
+    get:
+      operationId: membership_tasks_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - membership
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMembershipTaskList'
+          description: ''
+  /api/membership/tasks/{id}/brief/:
+    get:
+      operationId: membership_tasks_brief_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - membership
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipTaskBrief'
+          description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/notifications/{id}/read/:
+    patch:
+      operationId: notifications_read_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/notifications/read-all/:
+    patch:
+      operationId: notifications_read_all_partial_update
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/offers/:
+    get:
+      operationId: offers_list
+      parameters:
+      - in: query
+        name: currency
+        schema:
+          type: string
+          default: INR
+          enum:
+          - AED
+          - INR
+          - USD
+        description: |-
+          * `INR` - Indian Rupee
+          * `AED` - UAE Dirham
+          * `USD` - US Dollar
+      - in: query
+        name: exclusivity
+        schema:
+          type: string
+          default: none
+          enum:
+          - category_30
+          - full_60
+          - none
+        description: |-
+          * `none` - None
+          * `category_30` - Category 30 Days
+          * `full_60` - Full 60 Days
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: rights_tier
+        schema:
+          type: string
+          default: none
+          enum:
+          - buyout
+          - extended
+          - none
+          - standard
+        description: |-
+          * `none` - None
+          * `standard` - Standard
+          * `extended` - Extended
+          * `buyout` - Buyout
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          default: draft
+          enum:
+          - closed
+          - draft
+          - live
+          - paused
+        description: |-
+          * `draft` - Draft
+          * `live` - Live
+          * `paused` - Paused
+          * `closed` - Closed
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - course
+          - event_pass
+          - experience
+          - gift_card
+          - merchandise
+          - physical
+          - saas
+        description: |-
+          * `saas` - SaaS
+          * `physical` - Physical Product
+          * `event_pass` - Event Pass
+          * `experience` - Experience
+          * `merchandise` - Merchandise
+          * `course` - Course
+          * `gift_card` - Gift Card
+      tags:
+      - offers
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOfferListList'
+          description: ''
+    post:
+      operationId: offers_create
+      tags:
+      - offers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OfferCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OfferCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferCreate'
+          description: ''
+  /api/offers/{id}/:
+    get:
+      operationId: offers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - offers
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+          description: ''
+    put:
+      operationId: offers_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - offers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OfferUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OfferUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OfferUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferUpdate'
+          description: ''
+    patch:
+      operationId: offers_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - offers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOfferUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOfferUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOfferUpdateRequest'
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferUpdate'
+          description: ''
+    delete:
+      operationId: offers_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - offers
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/offers/{id}/proposals/:
+    post:
+      operationId: offers_proposals_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - offers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProposalCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProposalCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalCreate'
+          description: ''
+  /api/offers/{id}/value-engine/:
+    get:
+      operationId: offers_value_engine_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - offers
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/offers/my/:
+    get:
+      operationId: offers_my_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - offers
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOfferList'
+          description: ''
+  /api/payments/create-deal-fee/:
+    post:
+      operationId: payments_create_deal_fee_create
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/payments/invoices/:
+    get:
+      operationId: payments_invoices_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentList'
+          description: ''
+  /api/payments/subscriptions/:
+    post:
+      operationId: payments_subscriptions_create
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/payments/subscriptions/me/:
+    get:
+      operationId: payments_subscriptions_me_retrieve
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+          description: ''
+  /api/payments/subscriptions/me/cancel/:
+    delete:
+      operationId: payments_subscriptions_me_cancel_destroy
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/payments/wallet/:
+    get:
+      operationId: payments_wallet_retrieve
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/payments/wallet/transactions/:
+    get:
+      operationId: payments_wallet_transactions_retrieve
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/payments/wallet/transfer/:
+    post:
+      operationId: payments_wallet_transfer_create
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/payments/webhook/razorpay/:
+    post:
+      operationId: payments_webhook_razorpay_create
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/payments/webhook/stripe/:
+    post:
+      operationId: payments_webhook_stripe_create
+      tags:
+      - payments
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/proposals/:
+    get:
+      operationId: proposals_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - proposals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProposalListList'
+          description: ''
+  /api/proposals/{id}/:
+    get:
+      operationId: proposals_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+          description: ''
+  /api/proposals/{id}/accept/:
+    post:
+      operationId: proposals_accept_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/proposals/{id}/counter/:
+    post:
+      operationId: proposals_counter_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/proposals/{id}/decline/:
+    post:
+      operationId: proposals_decline_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - proposals
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/ratings/{id}/rate/:
+    post:
+      operationId: ratings_rate_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - ratings
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/users/{id}/:
+    get:
+      operationId: users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/me/:
+    get:
+      operationId: users_me_retrieve
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserMe'
+          description: ''
+    put:
+      operationId: users_me_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserMeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserMeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserMeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserMe'
+          description: ''
+    patch:
+      operationId: users_me_partial_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserMeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserMeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserMeRequest'
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserMe'
+          description: ''
+  /api/users/me/brand-profile/:
+    get:
+      operationId: users_me_brand_profile_retrieve
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandProfile'
+          description: ''
+    put:
+      operationId: users_me_brand_profile_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BrandProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BrandProfileRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandProfile'
+          description: ''
+    patch:
+      operationId: users_me_brand_profile_partial_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBrandProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBrandProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBrandProfileRequest'
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandProfile'
+          description: ''
+  /api/users/me/creator-profile/:
+    get:
+      operationId: users_me_creator_profile_retrieve
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorProfile'
+          description: ''
+    put:
+      operationId: users_me_creator_profile_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatorProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreatorProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreatorProfileRequest'
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorProfile'
+          description: ''
+    patch:
+      operationId: users_me_creator_profile_partial_update
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCreatorProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCreatorProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCreatorProfileRequest'
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatorProfile'
+          description: ''
+  /api/users/me/social-accounts/:
+    get:
+      operationId: users_me_social_accounts_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSocialAccountList'
+          description: ''
+    post:
+      operationId: users_me_social_accounts_create
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocialAccountCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SocialAccountCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SocialAccountCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialAccountCreate'
+          description: ''
+  /api/users/me/social-accounts/{platform}/:
+    delete:
+      operationId: users_me_social_accounts_destroy
+      parameters:
+      - in: path
+        name: platform
+        schema:
+          type: string
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    ApprovalModeEnum:
+      enum:
+      - auto
+      - manual
+      type: string
+      description: |-
+        * `auto` - Auto
+        * `manual` - Manual
+    BrandProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        company_name:
+          type: string
+          maxLength: 200
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        industry:
+          type: string
+          maxLength: 100
+        logo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        domain_verified:
+          type: boolean
+          default: false
+      required:
+      - company_name
+      - id
+    BrandProfileRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        industry:
+          type: string
+          maxLength: 100
+        logo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        domain_verified:
+          type: boolean
+          default: false
+      required:
+      - company_name
+    CreatorProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        niches: {}
+        content_types: {}
+        tier:
+          allOf:
+          - $ref: '#/components/schemas/TierEnum'
+          default: nano
+      required:
+      - id
+    CreatorProfileRequest:
+      type: object
+      properties:
+        niches: {}
+        content_types: {}
+        tier:
+          allOf:
+          - $ref: '#/components/schemas/TierEnum'
+          default: nano
+    CurrencyEnum:
+      enum:
+      - INR
+      - AED
+      - USD
+      type: string
+      description: |-
+        * `INR` - Indian Rupee
+        * `AED` - UAE Dirham
+        * `USD` - US Dollar
+    Deal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        offer:
+          type: string
+          format: uuid
+        offer_title:
+          type: string
+          readOnly: true
+        offer_type:
+          type: string
+          readOnly: true
+        brand:
+          type: string
+          format: uuid
+        brand_username:
+          type: string
+          readOnly: true
+        brand_name:
+          type: string
+          readOnly: true
+        creator:
+          type: string
+          format: uuid
+        creator_username:
+          type: string
+          readOnly: true
+        creator_name:
+          type: string
+          readOnly: true
+        agreed_terms: {}
+        rights_tier:
+          type: string
+          maxLength: 20
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          type: string
+          maxLength: 20
+        deal_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 3
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status631Enum'
+          default: pending_membership
+        shipping_address:
+          type: string
+          readOnly: true
+        shipped_at:
+          type: string
+          format: date-time
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        deadline:
+          type: string
+          format: date
+        contract_url:
+          type: string
+          format: uri
+          maxLength: 200
+        latest_delivery:
+          type: string
+          readOnly: true
+        revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RevisionRequest'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand
+      - brand_name
+      - brand_username
+      - created_at
+      - creator
+      - creator_name
+      - creator_username
+      - currency
+      - deadline
+      - deal_fee
+      - exclusivity
+      - id
+      - latest_delivery
+      - offer
+      - offer_title
+      - offer_type
+      - revisions
+      - rights_tier
+      - shipping_address
+      - updated_at
+    DealList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        offer_title:
+          type: string
+          readOnly: true
+        brand_username:
+          type: string
+          readOnly: true
+        creator_username:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status631Enum'
+          default: pending_membership
+        deal_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 3
+        deadline:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand_username
+      - created_at
+      - creator_username
+      - currency
+      - deadline
+      - deal_fee
+      - id
+      - offer_title
+    DealMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sender:
+          type: string
+          format: uuid
+        sender_username:
+          type: string
+          readOnly: true
+        sender_name:
+          type: string
+          readOnly: true
+        body:
+          type: string
+        attachment_url:
+          type: string
+          format: uri
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_read:
+          type: string
+          readOnly: true
+      required:
+      - body
+      - created_at
+      - id
+      - is_read
+      - sender
+      - sender_name
+      - sender_username
+    DealMessageCreate:
+      type: object
+      properties:
+        body:
+          type: string
+        attachment_url:
+          type: string
+          format: uri
+          maxLength: 200
+      required:
+      - body
+    DealMessageCreateRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+        attachment_url:
+          type: string
+          format: uri
+          maxLength: 200
+      required:
+      - body
+    DropsApplication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        campaign:
+          type: string
+          format: uuid
+        campaign_name:
+          type: string
+          readOnly: true
+        creator:
+          type: string
+          format: uuid
+        creator_username:
+          type: string
+          readOnly: true
+        creator_name:
+          type: string
+          readOnly: true
+        pitch:
+          type: string
+          maxLength: 500
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DropsApplicationStatusEnum'
+          default: pending
+        deal:
+          type: string
+          format: uuid
+          nullable: true
+        applied_at:
+          type: string
+          format: date-time
+          readOnly: true
+        reviewed_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - applied_at
+      - campaign
+      - campaign_name
+      - creator
+      - creator_name
+      - creator_username
+      - id
+      - pitch
+    DropsApplicationCreate:
+      type: object
+      properties:
+        campaign:
+          type: string
+          format: uuid
+        pitch:
+          type: string
+          maxLength: 500
+      required:
+      - campaign
+      - pitch
+    DropsApplicationCreateRequest:
+      type: object
+      properties:
+        campaign:
+          type: string
+          format: uuid
+        pitch:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - campaign
+      - pitch
+    DropsApplicationStatusEnum:
+      enum:
+      - pending
+      - approved
+      - declined
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `declined` - Declined
+    DropsCampaign:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        brand:
+          type: string
+          format: uuid
+        brand_username:
+          type: string
+          readOnly: true
+        brand_name:
+          type: string
+          readOnly: true
+        offer:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        goal:
+          $ref: '#/components/schemas/GoalEnum'
+        total_slots:
+          type: integer
+        filled_slots:
+          type: integer
+          default: 0
+        approval_mode:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalModeEnum'
+          default: manual
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        application_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - application_count
+      - brand
+      - brand_name
+      - brand_username
+      - created_at
+      - goal
+      - id
+      - name
+      - offer
+      - total_slots
+    DropsCampaignCreate:
+      type: object
+      properties:
+        offer:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        goal:
+          $ref: '#/components/schemas/GoalEnum'
+        total_slots:
+          type: integer
+        approval_mode:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalModeEnum'
+          default: manual
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - goal
+      - name
+      - offer
+      - total_slots
+    DropsCampaignCreateRequest:
+      type: object
+      properties:
+        offer:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        goal:
+          $ref: '#/components/schemas/GoalEnum'
+        total_slots:
+          type: integer
+        approval_mode:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalModeEnum'
+          default: manual
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - goal
+      - name
+      - offer
+      - total_slots
+    DropsCampaignRequest:
+      type: object
+      properties:
+        brand:
+          type: string
+          format: uuid
+        offer:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        goal:
+          $ref: '#/components/schemas/GoalEnum'
+        total_slots:
+          type: integer
+        filled_slots:
+          type: integer
+          default: 0
+        approval_mode:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalModeEnum'
+          default: manual
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+      required:
+      - brand
+      - goal
+      - name
+      - offer
+      - total_slots
+    ExclusivityEnum:
+      enum:
+      - none
+      - category_30
+      - full_60
+      type: string
+      description: |-
+        * `none` - None
+        * `category_30` - Category 30 Days
+        * `full_60` - Full 60 Days
+    GatewayEnum:
+      enum:
+      - razorpay
+      - stripe
+      type: string
+      description: |-
+        * `razorpay` - Razorpay
+        * `stripe` - Stripe
+    GoalEnum:
+      enum:
+      - awareness
+      - launch
+      - event_hype
+      - review
+      type: string
+      description: |-
+        * `awareness` - Brand Awareness
+        * `launch` - Product Launch
+        * `event_hype` - Event Hype
+        * `review` - Product Review
+    MembershipReview:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        creator:
+          type: string
+          format: uuid
+        creator_username:
+          type: string
+          readOnly: true
+        creator_name:
+          type: string
+          readOnly: true
+        task:
+          type: string
+          format: uuid
+        task_title:
+          type: string
+          readOnly: true
+        post_url:
+          type: string
+          format: uri
+          maxLength: 200
+        note:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MembershipReviewStatusEnum'
+          default: pending
+        points_awarded:
+          type: integer
+          default: 0
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creator
+      - creator_name
+      - creator_username
+      - id
+      - post_url
+      - submitted_at
+      - task
+      - task_title
+    MembershipReviewStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      - resubmit_requested
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `approved` - Approved
+        * `rejected` - Rejected
+        * `resubmit_requested` - Resubmit Requested
+    MembershipTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        brand_name:
+          type: string
+          maxLength: 100
+        brand_logo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        title:
+          type: string
+          maxLength: 200
+        platform:
+          allOf:
+          - $ref: '#/components/schemas/MembershipTaskPlatformEnum'
+          default: open
+        points_value:
+          type: integer
+        brief_richtext:
+          type: string
+        required_tags: {}
+        is_featured:
+          type: boolean
+          default: false
+        available_to_tiers: {}
+        available_to_markets: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand_name
+      - brief_richtext
+      - created_at
+      - id
+      - points_value
+      - title
+    MembershipTaskBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        brand_name:
+          type: string
+          maxLength: 100
+        brand_logo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        title:
+          type: string
+          maxLength: 200
+        brief_richtext:
+          type: string
+        required_tags: {}
+      required:
+      - brand_name
+      - brief_richtext
+      - id
+      - title
+    MembershipTaskPlatformEnum:
+      enum:
+      - instagram
+      - tiktok
+      - open
+      type: string
+      description: |-
+        * `instagram` - Instagram
+        * `tiktok` - TikTok
+        * `open` - Open
+    MembershipTaskSubmissionCreate:
+      type: object
+      properties:
+        task:
+          type: string
+          format: uuid
+        post_url:
+          type: string
+          format: uri
+          maxLength: 200
+        note:
+          type: string
+      required:
+      - post_url
+      - task
+    MembershipTaskSubmissionCreateRequest:
+      type: object
+      properties:
+        task:
+          type: string
+          format: uuid
+        post_url:
+          type: string
+          format: uri
+          minLength: 1
+          maxLength: 200
+        note:
+          type: string
+      required:
+      - post_url
+      - task
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        title:
+          type: string
+          maxLength: 100
+        body:
+          type: string
+        deep_link:
+          type: string
+          format: uri
+          maxLength: 200
+        read:
+          type: boolean
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - created_at
+      - id
+      - title
+      - type
+    NotificationTypeEnum:
+      enum:
+      - proposal_received
+      - proposal_accepted
+      - proposal_countered
+      - proposal_declined
+      - deal_room_created
+      - brand_shipped
+      - creator_confirmed
+      - content_delivered
+      - revision_requested
+      - deal_complete
+      - rating_received
+      - membership_submitted
+      - membership_approved
+      - membership_rejected
+      - pro_expiring
+      - drops_application
+      - drops_approved
+      - deal_message
+      - deal_disputed
+      type: string
+      description: |-
+        * `proposal_received` - Proposal Received
+        * `proposal_accepted` - Proposal Accepted
+        * `proposal_countered` - Proposal Countered
+        * `proposal_declined` - Proposal Declined
+        * `deal_room_created` - Deal Room Created
+        * `brand_shipped` - Brand Shipped
+        * `creator_confirmed` - Creator Confirmed
+        * `content_delivered` - Content Delivered
+        * `revision_requested` - Revision Requested
+        * `deal_complete` - Deal Complete
+        * `rating_received` - Rating Received
+        * `membership_submitted` - Membership Submitted
+        * `membership_approved` - Membership Approved
+        * `membership_rejected` - Membership Rejected
+        * `pro_expiring` - Pro Expiring
+        * `drops_application` - Drops Application
+        * `drops_approved` - Drops Approved
+        * `deal_message` - Deal Message
+        * `deal_disputed` - Deal Disputed
+    Offer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        brand:
+          type: string
+          format: uuid
+          readOnly: true
+        brand_username:
+          type: string
+          readOnly: true
+        brand_name:
+          type: string
+          readOnly: true
+        brand_company_name:
+          type: string
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/Type2b9Enum'
+        title:
+          type: string
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        quantity:
+          type: integer
+        quantity_remaining:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        kpi_preferences: {}
+        rights_tier:
+          allOf:
+          - $ref: '#/components/schemas/RightsTierEnum'
+          default: none
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          allOf:
+          - $ref: '#/components/schemas/ExclusivityEnum'
+          default: none
+        images: {}
+        attachments: {}
+        proposal_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        max_proposals:
+          type: integer
+          nullable: true
+        shipping_required:
+          type: boolean
+          default: false
+        proposal_count:
+          type: string
+          readOnly: true
+        is_drops:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand
+      - brand_company_name
+      - brand_name
+      - brand_username
+      - created_at
+      - description
+      - estimated_value
+      - id
+      - is_drops
+      - proposal_count
+      - quantity
+      - quantity_remaining
+      - title
+      - type
+      - updated_at
+    OfferCreate:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Type2b9Enum'
+        title:
+          type: string
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        quantity:
+          type: integer
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        kpi_preferences: {}
+        rights_tier:
+          allOf:
+          - $ref: '#/components/schemas/RightsTierEnum'
+          default: none
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          allOf:
+          - $ref: '#/components/schemas/ExclusivityEnum'
+          default: none
+        images: {}
+        attachments: {}
+        proposal_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        max_proposals:
+          type: integer
+          nullable: true
+        shipping_required:
+          type: boolean
+          default: false
+      required:
+      - description
+      - estimated_value
+      - quantity
+      - title
+      - type
+    OfferCreateRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Type2b9Enum'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        quantity:
+          type: integer
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        kpi_preferences: {}
+        rights_tier:
+          allOf:
+          - $ref: '#/components/schemas/RightsTierEnum'
+          default: none
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          allOf:
+          - $ref: '#/components/schemas/ExclusivityEnum'
+          default: none
+        images: {}
+        attachments: {}
+        proposal_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        max_proposals:
+          type: integer
+          nullable: true
+        shipping_required:
+          type: boolean
+          default: false
+      required:
+      - description
+      - estimated_value
+      - quantity
+      - title
+      - type
+    OfferList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        brand_username:
+          type: string
+          readOnly: true
+        brand_name:
+          type: string
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/Type2b9Enum'
+        title:
+          type: string
+          maxLength: 80
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        quantity_remaining:
+          type: integer
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand_name
+      - brand_username
+      - created_at
+      - estimated_value
+      - id
+      - quantity_remaining
+      - title
+      - type
+    OfferUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 80
+        description:
+          type: string
+          maxLength: 500
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        kpi_preferences: {}
+        rights_tier:
+          allOf:
+          - $ref: '#/components/schemas/RightsTierEnum'
+          default: none
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          allOf:
+          - $ref: '#/components/schemas/ExclusivityEnum'
+          default: none
+        images: {}
+        attachments: {}
+        proposal_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        max_proposals:
+          type: integer
+          nullable: true
+        shipping_required:
+          type: boolean
+          default: false
+      required:
+      - description
+      - estimated_value
+      - title
+    OfferUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        kpi_preferences: {}
+        rights_tier:
+          allOf:
+          - $ref: '#/components/schemas/RightsTierEnum'
+          default: none
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          allOf:
+          - $ref: '#/components/schemas/ExclusivityEnum'
+          default: none
+        images: {}
+        attachments: {}
+        proposal_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        max_proposals:
+          type: integer
+          nullable: true
+        shipping_required:
+          type: boolean
+          default: false
+      required:
+      - description
+      - estimated_value
+      - title
+    PaginatedDealListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealList'
+    PaginatedDealMessageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DealMessage'
+    PaginatedDropsApplicationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DropsApplication'
+    PaginatedDropsCampaignList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DropsCampaign'
+    PaginatedMembershipReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipReview'
+    PaginatedMembershipTaskList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipTask'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedOfferList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+    PaginatedOfferListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferList'
+    PaginatedPaymentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+    PaginatedProposalListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalList'
+    PaginatedSocialAccountList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SocialAccount'
+    PatchedBrandProfileRequest:
+      type: object
+      properties:
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        website:
+          type: string
+          format: uri
+          maxLength: 200
+        industry:
+          type: string
+          maxLength: 100
+        logo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        domain_verified:
+          type: boolean
+          default: false
+    PatchedCreatorProfileRequest:
+      type: object
+      properties:
+        niches: {}
+        content_types: {}
+        tier:
+          allOf:
+          - $ref: '#/components/schemas/TierEnum'
+          default: nano
+    PatchedDropsCampaignRequest:
+      type: object
+      properties:
+        brand:
+          type: string
+          format: uuid
+        offer:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        goal:
+          $ref: '#/components/schemas/GoalEnum'
+        total_slots:
+          type: integer
+        filled_slots:
+          type: integer
+          default: 0
+        approval_mode:
+          allOf:
+          - $ref: '#/components/schemas/ApprovalModeEnum'
+          default: manual
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+    PatchedOfferUpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        estimated_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          default: INR
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusE4dEnum'
+          default: draft
+        content_ask: {}
+        kpi_preferences: {}
+        rights_tier:
+          allOf:
+          - $ref: '#/components/schemas/RightsTierEnum'
+          default: none
+        raw_files_required:
+          type: boolean
+          default: false
+        exclusivity:
+          allOf:
+          - $ref: '#/components/schemas/ExclusivityEnum'
+          default: none
+        images: {}
+        attachments: {}
+        proposal_deadline:
+          type: string
+          format: date-time
+          nullable: true
+        max_proposals:
+          type: integer
+          nullable: true
+        shipping_required:
+          type: boolean
+          default: false
+    PatchedUserMeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: creator
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        username:
+          type: string
+          minLength: 1
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 280
+        location_city:
+          type: string
+          maxLength: 100
+        location_country:
+          type: string
+          maxLength: 100
+        profile_photo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_verified:
+          type: boolean
+          default: false
+        barter_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+          default: '0.0'
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        deal:
+          type: string
+          format: uuid
+          nullable: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 3
+        gateway:
+          $ref: '#/components/schemas/GatewayEnum'
+        gateway_ref:
+          type: string
+          maxLength: 200
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatusEnum'
+          default: pending
+        invoice_url:
+          type: string
+          format: uri
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - currency
+      - gateway
+      - gateway_ref
+      - id
+    PaymentStatusEnum:
+      enum:
+      - pending
+      - completed
+      - failed
+      - refunded
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `completed` - Completed
+        * `failed` - Failed
+        * `refunded` - Refunded
+    PlanEnum:
+      enum:
+      - free
+      - starter
+      - growth
+      - scale
+      type: string
+      description: |-
+        * `free` - Free
+        * `starter` - Starter
+        * `growth` - Growth
+        * `scale` - Scale
+    Platform8e3Enum:
+      enum:
+      - instagram
+      - tiktok
+      - youtube
+      - linkedin
+      type: string
+      description: |-
+        * `instagram` - Instagram
+        * `tiktok` - TikTok
+        * `youtube` - YouTube
+        * `linkedin` - LinkedIn
+    Proposal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        offer:
+          type: string
+          format: uuid
+        offer_title:
+          type: string
+          readOnly: true
+        offer_brand_username:
+          type: string
+          readOnly: true
+        creator:
+          type: string
+          format: uuid
+        creator_username:
+          type: string
+          readOnly: true
+        creator_name:
+          type: string
+          readOnly: true
+        pitch:
+          type: string
+          maxLength: 500
+        deliverables: {}
+        timeline:
+          type: string
+          format: date
+        round_number:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status4d1Enum'
+          readOnly: true
+        counter_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        can_counter:
+          type: string
+          readOnly: true
+        counters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalCounter'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - can_counter
+      - counter_by
+      - counters
+      - created_at
+      - creator
+      - creator_name
+      - creator_username
+      - id
+      - offer
+      - offer_brand_username
+      - offer_title
+      - pitch
+      - round_number
+      - status
+      - timeline
+      - updated_at
+    ProposalCounter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        sent_by:
+          type: string
+          format: uuid
+        sent_by_username:
+          type: string
+          readOnly: true
+        deliverables: {}
+        timeline:
+          type: string
+          format: date
+        note:
+          type: string
+          maxLength: 300
+        round_number:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - round_number
+      - sent_by
+      - sent_by_username
+      - timeline
+    ProposalCreate:
+      type: object
+      properties:
+        offer:
+          type: string
+          format: uuid
+        pitch:
+          type: string
+          maxLength: 500
+        deliverables: {}
+        timeline:
+          type: string
+          format: date
+      required:
+      - offer
+      - pitch
+      - timeline
+    ProposalCreateRequest:
+      type: object
+      properties:
+        offer:
+          type: string
+          format: uuid
+        pitch:
+          type: string
+          minLength: 1
+          maxLength: 500
+        deliverables: {}
+        timeline:
+          type: string
+          format: date
+      required:
+      - offer
+      - pitch
+      - timeline
+    ProposalList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        offer_title:
+          type: string
+          readOnly: true
+        offer_brand_username:
+          type: string
+          readOnly: true
+        creator_username:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/Status4d1Enum'
+          default: pending
+        round_number:
+          type: integer
+          default: 1
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - creator_username
+      - id
+      - offer_brand_username
+      - offer_title
+    RevisionRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        requested_by:
+          type: string
+          format: uuid
+        requested_by_username:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          maxLength: 300
+        round_number:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - reason
+      - requested_by
+      - requested_by_username
+      - round_number
+    RightsTierEnum:
+      enum:
+      - none
+      - standard
+      - extended
+      - buyout
+      type: string
+      description: |-
+        * `none` - None
+        * `standard` - Standard
+        * `extended` - Extended
+        * `buyout` - Buyout
+    RoleEnum:
+      enum:
+      - brand
+      - creator
+      - both
+      type: string
+      description: |-
+        * `brand` - Brand
+        * `creator` - Creator
+        * `both` - Both
+    SocialAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        platform:
+          $ref: '#/components/schemas/Platform8e3Enum'
+        handle:
+          type: string
+          maxLength: 100
+        followers:
+          type: integer
+          default: 0
+        engagement_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          default: '0.00'
+        avg_views:
+          type: integer
+          default: 0
+        demographics: {}
+        last_synced:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - handle
+      - id
+      - platform
+    SocialAccountCreate:
+      type: object
+      properties:
+        platform:
+          $ref: '#/components/schemas/Platform8e3Enum'
+        handle:
+          type: string
+          maxLength: 100
+        followers:
+          type: integer
+          default: 0
+        engagement_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          default: '0.00'
+        avg_views:
+          type: integer
+          default: 0
+        demographics: {}
+      required:
+      - handle
+      - platform
+    SocialAccountCreateRequest:
+      type: object
+      properties:
+        platform:
+          $ref: '#/components/schemas/Platform8e3Enum'
+        handle:
+          type: string
+          minLength: 1
+          maxLength: 100
+        access_token:
+          type: string
+          writeOnly: true
+          minLength: 1
+        refresh_token:
+          type: string
+          writeOnly: true
+        followers:
+          type: integer
+          default: 0
+        engagement_rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          default: '0.00'
+        avg_views:
+          type: integer
+          default: 0
+        demographics: {}
+      required:
+      - access_token
+      - handle
+      - platform
+    Status4d1Enum:
+      enum:
+      - pending
+      - countered
+      - accepted
+      - declined
+      - expired
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `countered` - Countered
+        * `accepted` - Accepted
+        * `declined` - Declined
+        * `expired` - Expired
+    Status631Enum:
+      enum:
+      - pending_membership
+      - active
+      - delivered
+      - revision_requested
+      - complete
+      - disputed
+      - cancelled
+      type: string
+      description: |-
+        * `pending_membership` - Pending Membership
+        * `active` - Active
+        * `delivered` - Delivered
+        * `revision_requested` - Revision Requested
+        * `complete` - Complete
+        * `disputed` - Disputed
+        * `cancelled` - Cancelled
+    StatusE4dEnum:
+      enum:
+      - draft
+      - live
+      - paused
+      - closed
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `live` - Live
+        * `paused` - Paused
+        * `closed` - Closed
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        plan:
+          allOf:
+          - $ref: '#/components/schemas/PlanEnum'
+          default: free
+        gateway:
+          $ref: '#/components/schemas/GatewayEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SubscriptionStatusEnum'
+          default: active
+        current_period_end:
+          type: string
+          format: date-time
+        deals_used:
+          type: integer
+          default: 0
+        deals_included:
+          type: integer
+          default: 5
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_period_end
+      - gateway
+      - id
+    SubscriptionStatusEnum:
+      enum:
+      - active
+      - cancelled
+      - past_due
+      type: string
+      description: |-
+        * `active` - Active
+        * `cancelled` - Cancelled
+        * `past_due` - Past Due
+    TierEnum:
+      enum:
+      - nano
+      - micro
+      - mid
+      - macro
+      - mega
+      type: string
+      description: |-
+        * `nano` - Nano
+        * `micro` - Micro
+        * `mid` - Mid
+        * `macro` - Macro
+        * `mega` - Mega
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Type2b9Enum:
+      enum:
+      - saas
+      - physical
+      - event_pass
+      - experience
+      - merchandise
+      - course
+      - gift_card
+      type: string
+      description: |-
+        * `saas` - SaaS
+        * `physical` - Physical Product
+        * `event_pass` - Event Pass
+        * `experience` - Experience
+        * `merchandise` - Merchandise
+        * `course` - Course
+        * `gift_card` - Gift Card
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: creator
+        name:
+          type: string
+          maxLength: 100
+        username:
+          type: string
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 280
+        location_city:
+          type: string
+          maxLength: 100
+        location_country:
+          type: string
+          maxLength: 100
+        profile_photo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_verified:
+          type: boolean
+          default: false
+        barter_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - barter_score
+      - created_at
+      - email
+      - id
+      - name
+      - username
+    UserMe:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: creator
+        name:
+          type: string
+          maxLength: 100
+        username:
+          type: string
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 280
+        location_city:
+          type: string
+          maxLength: 100
+        location_country:
+          type: string
+          maxLength: 100
+        profile_photo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_verified:
+          type: boolean
+          default: false
+        barter_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+          default: '0.0'
+        brand_profile:
+          type: string
+          readOnly: true
+        creator_profile:
+          type: string
+          readOnly: true
+        social_accounts:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - brand_profile
+      - created_at
+      - creator_profile
+      - email
+      - id
+      - name
+      - social_accounts
+      - updated_at
+      - username
+    UserMeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: creator
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        username:
+          type: string
+          minLength: 1
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 280
+        location_city:
+          type: string
+          maxLength: 100
+        location_country:
+          type: string
+          maxLength: 100
+        profile_photo_url:
+          type: string
+          format: uri
+          maxLength: 200
+        is_verified:
+          type: boolean
+          default: false
+        barter_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+          default: '0.0'
+      required:
+      - email
+      - name
+      - username
+    UserRegistration:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: creator
+        name:
+          type: string
+          maxLength: 100
+        username:
+          type: string
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 280
+        location_city:
+          type: string
+          maxLength: 100
+        location_country:
+          type: string
+          maxLength: 100
+      required:
+      - email
+      - name
+      - username
+    UserRegistrationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirm:
+          type: string
+          writeOnly: true
+          minLength: 1
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: creator
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        username:
+          type: string
+          minLength: 1
+          maxLength: 50
+        bio:
+          type: string
+          maxLength: 280
+        location_city:
+          type: string
+          maxLength: 100
+        location_country:
+          type: string
+          maxLength: 100
+      required:
+      - email
+      - name
+      - password
+      - password_confirm
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

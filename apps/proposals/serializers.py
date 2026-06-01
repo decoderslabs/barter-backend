@@ -79,13 +79,22 @@ class ProposalListSerializer(serializers.ModelSerializer):
     offer_title = serializers.CharField(source='offer.title', read_only=True)
     offer_brand_username = serializers.CharField(source='offer.brand.username', read_only=True)
     creator_username = serializers.CharField(source='creator.username', read_only=True)
+    creator_name = serializers.CharField(source='creator.name', read_only=True)
+    pitch = serializers.CharField(read_only=True)
+    deliverables = serializers.JSONField(read_only=True)
+    timeline = serializers.DateField(read_only=True)
+    can_counter = serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
         fields = [
             'id', 'offer_title', 'offer_brand_username',
-            'creator_username', 'status', 'round_number', 'created_at'
+            'creator_username', 'creator_name', 'status', 'round_number',
+            'pitch', 'deliverables', 'timeline', 'can_counter', 'created_at'
         ]
+
+    def get_can_counter(self, obj):
+        return obj.can_counter()
 
 
 class CounterProposalSerializer(serializers.Serializer):

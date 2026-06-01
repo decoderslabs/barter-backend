@@ -19,11 +19,13 @@ class MembershipTask(models.Model):
     platform = models.CharField(max_length=15, choices=PLATFORM_CHOICES, default='open')
     points_value = models.PositiveIntegerField()
     brief_richtext = models.TextField()
+    brief = models.JSONField(default=dict)  # {what_to_create, key_messages, donts, required_tags, example_url}
     required_tags = models.JSONField(default=list)
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     available_to_tiers = models.JSONField(default=list)  # ["nano","micro",...]
     available_to_markets = models.JSONField(default=list)  # ["IN","AE",...]
+    available_again_on = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -32,6 +34,21 @@ class MembershipTask(models.Model):
 
     def __str__(self):
         return f"{self.brand_name}: {self.title} ({self.points_value} pts)"
+
+    def is_available_for_user(self, user):
+        if not self.is_active:
+            return False
+        if self.available_again_on and timezone.now() < self.available_again_on:
+            return False
+        if hasattr(user, 'creator_profile'):
+            user_tier = user.creator_profile.tier
+            if self.available_to_tiers and user_tier not in self.available_to_tiers:
+                return False
+        if self.available_to_markets and user.location_country:
+            user_market = user.location_country.upper()
+            if user_market not in self.available_to_markets:
+                return False
+        return True
 
 
 class MembershipTaskSubmission(models.Model):
@@ -72,6 +89,8 @@ class CreatorMembership(models.Model):
     tier = models.CharField(max_length=10, default='nano')
     tasks_this_period = models.JSONField(default=dict)
     period_reset_at = models.DateTimeField(null=True, blank=True)
+    pending_verification = models.BooleanField(default=False)
+    points_history = models.JSONField(default=list)  # [{title, date, points}]
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -80,8 +99,14 @@ class CreatorMembership(models.Model):
     def __str__(self):
         return f"Membership: {self.creator.username} ({self.total_points} pts)"
 
-    def add_points(self, points):
+    def add_points(self, points, title="Points earned"):
         self.total_points += points
+        # Record in history
+        self.points_history.append({
+            'title': title,
+            'date': timezone.now().isoformat(),
+            'points': points
+        })
         self.check_pro_eligibility()
         self.save()
 
@@ -94,6 +119,7 @@ class CreatorMembership(models.Model):
             if self.total_points >= points_needed:
                 earned_months = months
 
+        was_active = self.pro_active
         if earned_months > 0:
             now = timezone.now()
             current_expiry = self.pro_expires_at or now
@@ -104,6 +130,11 @@ class CreatorMembership(models.Model):
 
             self.pro_expires_at = new_expiry
             self.pro_active = True
+
+        # If creator just became Pro, activate pending_membership deals
+        if not was_active and self.pro_active:
+            from apps.deals.models import Deal
+            Deal.objects.filter(creator=self.creator, status='pending_membership').update(status='active')
 
     def check_pro_status(self):
         if self.pro_expires_at and timezone.now() > self.pro_expires_at:

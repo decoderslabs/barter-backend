@@ -50,6 +50,14 @@ class DealManager(models.Manager):
             else:
                 fee = round(2999 * 0.012, 2)
 
+        # Check creator Pro status
+        from apps.membership.models import CreatorMembership
+        try:
+            membership = proposal.creator.membership
+            is_pro = membership.pro_active and (membership.pro_expires_at is None or membership.pro_expires_at > timezone.now())
+        except CreatorMembership.DoesNotExist:
+            is_pro = False
+
         deal = self.create(
             offer=proposal.offer,
             proposal=proposal,
@@ -61,7 +69,7 @@ class DealManager(models.Manager):
             exclusivity=proposal.offer.exclusivity,
             deal_fee=fee,
             currency=currency,
-            status='pending_membership',
+            status='active' if is_pro else 'pending_membership',
             deadline=proposal.timeline,
         )
 

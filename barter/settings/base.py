@@ -45,6 +45,8 @@ LOCAL_APPS = [
     'apps.payments',
     'apps.contracts',
     'apps.admin_panel',
+    'apps.config',
+    'apps.brands',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -116,6 +118,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
@@ -145,7 +148,17 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
     'http://localhost:3000',
     'http://localhost:8080',
     'http://127.0.0.1:3000',
+    'http://localhost:5000',
+    'http://127.0.0.1:5000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
 ])
+
+# Flutter web uses random ports during development.
+CORS_ALLOWED_ORIGIN_REGEXES = env.list(
+    'CORS_ALLOWED_ORIGIN_REGEXES',
+    default=[r'^http://localhost:\d+$', r'^http://127\.0\.0\.1:\d+$'],
+)
 
 CORS_ALLOW_CREDENTIALS = True
 

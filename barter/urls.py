@@ -14,6 +14,7 @@ urlpatterns = [
 
     path('api/auth/', include('apps.users.urls')),
     path('api/users/', include('apps.users.profile_urls')),
+    path('api/config/', include('apps.config.urls')),
     path('api/offers/', include('apps.offers.urls')),
     path('api/proposals/', include('apps.proposals.urls')),
     path('api/deals/', include('apps.deals.urls')),
@@ -23,6 +24,7 @@ urlpatterns = [
     path('api/notifications/', include('apps.notifications.urls')),
     path('api/payments/', include('apps.payments.urls')),
     path('api/contracts/', include('apps.contracts.urls')),
+    path('api/brands/', include('apps.brands.urls')),
     path('api/analytics/', include('apps.admin_panel.analytics_urls')),
 ]
 

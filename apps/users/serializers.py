@@ -109,3 +109,52 @@ class CreatorProfileCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreatorProfile
         fields = ['niches', 'content_types']
+
+
+class CreatorListSerializer(serializers.ModelSerializer):
+    creator_profile = CreatorProfileSerializer(read_only=True)
+    social_accounts = SocialAccountSerializer(many=True, read_only=True)
+    total_followers = serializers.SerializerMethodField()
+    avg_engagement_rate = serializers.SerializerMethodField()
+    past_collabs = serializers.SerializerMethodField()
+    primary_niche = serializers.SerializerMethodField()
+    platforms = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'email', 'role', 'name', 'username', 'bio',
+            'location_city', 'location_country', 'profile_photo_url',
+            'is_verified', 'barter_score', 'creator_profile', 'social_accounts',
+            'total_followers', 'avg_engagement_rate', 'past_collabs',
+            'primary_niche', 'platforms', 'tags', 'created_at',
+        ]
+
+    def get_total_followers(self, obj):
+        total = sum(account.followers for account in obj.social_accounts.all())
+        return total
+
+    def get_avg_engagement_rate(self, obj):
+        accounts = obj.social_accounts.all()
+        if accounts:
+            return sum(account.engagement_rate for account in accounts) / len(accounts)
+        return 0.0
+
+    def get_past_collabs(self, obj):
+        from apps.deals.models import Deal
+        return Deal.objects.filter(creator=obj, status='completed').count()
+
+    def get_primary_niche(self, obj):
+        if hasattr(obj, 'creator_profile') and obj.creator_profile.niches:
+            return obj.creator_profile.niches[0] if obj.creator_profile.niches else None
+        return None
+
+    def get_platforms(self, obj):
+        return list(obj.social_accounts.values_list('platform', flat=True))
+
+    def get_tags(self, obj):
+        # Mock tags based on niches - in production, this would be a separate field
+        if hasattr(obj, 'creator_profile') and obj.creator_profile.niches:
+            return [f"{niche} Creator" for niche in obj.creator_profile.niches[:2]]
+        return []
