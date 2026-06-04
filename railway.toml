@@ -6,3 +6,15 @@ startCommand = "gunicorn barter.wsgi --bind 0.0.0.0:$PORT"
 
 [[services]]
 name = "web"
+
+[services.web]
+# Environment variables
+RAILWAY_ENVIRONMENT = "production"
+PYTHON_VERSION = "3.13"
+
+[services.web.env]
+DJANGO_SETTINGS_MODULE = "barter.settings.prod"
+SECRET_KEY = "${{ secrets.SECRET_KEY }}"
+DATABASE_URL = "${{ services.database.DATABASE_URL }}"
+REDIS_URL = "${{ services.redis.REDIS_URL }}"
+ALLOWED_HOSTS = "${{ services.web.RAILWAY_PUBLIC_DOMAIN }}"

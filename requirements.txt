@@ -9,7 +9,7 @@ firebase-admin==6.4
 sendgrid==6.11
 razorpay==1.4.2
 stripe==8.0
-weasyprint==61.2
+# weasyprint==61.2  # Commented out - requires system dependencies not available on Railway
 Pillow==10.3
 gunicorn==21.2
 whitenoise==6.6

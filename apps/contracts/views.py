@@ -2,7 +2,6 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.template.loader import render_to_string
-from weasyprint import HTML
 import tempfile
 import os
 from django.conf import settings
@@ -46,6 +45,9 @@ class ContractPDFView(APIView):
 def generate_contract_pdf(deal):
     """Generate contract PDF using WeasyPrint and upload to Supabase"""
     try:
+        # Lazy import WeasyPrint to avoid system dependency issues during migrations
+        from weasyprint import HTML
+
         html_string = render_to_string('contracts/contract.html', {
             'deal': deal,
             'brand_profile': deal.brand.brand_profile,
@@ -60,7 +62,7 @@ def generate_contract_pdf(deal):
         # Upload to Supabase
         supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
         file_path = f"contracts/{deal.id}/contract.pdf"
-        
+
         supabase.storage.from_('barter-private').upload(
             file_path,
             pdf,
