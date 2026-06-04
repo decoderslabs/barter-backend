@@ -7,7 +7,7 @@ django-filter==23.5
 supabase==2.3
 firebase-admin==6.4
 sendgrid==6.11
-razorpay==1.4
+razorpay==1.4.2
 stripe==8.0
 weasyprint==61.2
 Pillow==10.3
